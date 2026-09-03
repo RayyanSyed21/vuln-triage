@@ -1,0 +1,2 @@
+1. CVE-2024-3094: Malicious code discovered in xz-utils 5.6.0 and 5.6.1. Backdoor allows unauthorized SSH access via a modified liblzma. Package present in build image, sshd links against liblzma. Internet-facing.
+2. 
