@@ -43,7 +43,9 @@ shellingham==1.5.4
 six==1.17.0
 starlette==1.6.0
 tomlkit==0.14.0
+torch==2.14.0
 tqdm==4.70.0
+transformers==5.17.0
 typer==0.27.2
 typing-inspection==0.4.4
 typing_extensions==4.16.0

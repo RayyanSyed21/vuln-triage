@@ -8,6 +8,7 @@ load_dotenv()
 
 BACKENDS = ["Remote API", "Local model"]
 REMOTE_MODEL = "google/gemma-3-4b-it"
+LOCAL_MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
 
 client = InferenceClient(
     provider="auto",
@@ -38,6 +39,30 @@ def call_remote(alert, temp):
     return resp.choices[0].message.content
 
 
+_local_pipe = None
+
+
+def get_local_pipeline():
+    global _local_pipe
+    if _local_pipe is None:
+        from transformers import pipeline
+        _local_pipe = pipeline("text-generation", model=LOCAL_MODEL)
+    return _local_pipe
+
+
+def call_local(alert, temp):
+    pipe = get_local_pipeline()
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": alert},
+    ]
+    gen_kwargs = {"max_new_tokens": 200, "do_sample": temp > 0}
+    if temp > 0:
+        gen_kwargs["temperature"] = temp
+    result = pipe(messages, **gen_kwargs)
+    return result[0]["generated_text"][-1]["content"]
+
+
 def triage(alert, backend, temp):
     if not alert.strip():
         return "Paste an alert first."
@@ -47,7 +72,7 @@ def triage(alert, backend, temp):
         if backend == "Remote API":
             body = call_remote(alert, temp)
         else:
-            body = "Local model not wired up yet (Step 5)."
+            body = call_local(alert, temp)
     except Exception as e:
         body = f"{type(e).__name__}: {e}"
 
