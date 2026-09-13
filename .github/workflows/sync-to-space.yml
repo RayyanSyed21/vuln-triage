@@ -18,3 +18,12 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: git push https://RayyanSyed21:$HF_TOKEN@huggingface.co/spaces/RayyanSyed21/vuln-triage main --force
+
+      - name: Notify Discord
+        if: always()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          curl -H "Content-Type: application/json" \
+               -d "{\"content\": \"**Sync to Hugging Face Space** finished with status: ${{ job.status }} (commit ${{ github.sha }})\"}" \
+               "$DISCORD_WEBHOOK"

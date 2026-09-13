@@ -23,3 +23,12 @@ jobs:
 
       - name: Run tests
         run: pytest
+
+      - name: Notify Discord
+        if: always()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          curl -H "Content-Type: application/json" \
+               -d "{\"content\": \"**Run tests** finished with status: ${{ job.status }} (commit ${{ github.sha }})\"}" \
+               "$DISCORD_WEBHOOK"
