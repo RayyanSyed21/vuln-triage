@@ -1,2 +1,2 @@
 1. CVE-2024-3094: Malicious code discovered in xz-utils 5.6.0 and 5.6.1. Backdoor allows unauthorized SSH access via a modified liblzma. Package present in build image, sshd links against liblzma. Internet-facing.
-2. 
+2. CVE-2021-44228 (Log4Shell): Remote code execution in Apache Log4j2 versions 2.0-beta9 through 2.14.1. JNDI lookup feature allows attackers to execute arbitrary code by logging a crafted string. Log4j is used in the customer-facing API service, which is internet-facing and processes untrusted user input directly into log statements.
