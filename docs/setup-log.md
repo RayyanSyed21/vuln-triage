@@ -111,3 +111,17 @@ Observed the idempotency guarantee directly: an overlapping cron cycle ran
 bootstrap.sh a second time on the already-recovered machine; it made no
 changes ("Already up to date", all requirements satisfied) and exited
 cleanly. Confirms recovery is safe to trigger repeatedly.
+
+## Tue Sep 29, ~3:16pm ET — Challenge: apt lock contention during recovery
+
+A wipe-and-recover test failed with "Could not get lock
+/var/lib/apt/lists/lock ... held by process (apt-get)". The VM's daily
+unattended-upgrades job held the dpkg lock exactly when the watchdog ran
+bootstrap. Because bootstrap uses set -e, the failed apt-get update
+aborted the whole script, so the service was never installed and the app
+stayed down.
+
+Resolution: pass -o DPkg::Lock::Timeout=300 to apt-get so it waits up to
+5 minutes for the lock instead of failing immediately. This is a real
+recovery race: automated provisioning must tolerate the OS running its
+own package jobs concurrently.
