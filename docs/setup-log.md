@@ -96,3 +96,18 @@ restarted it within 8 seconds; curl returned HTTP 200 afterward. Confirms
 Layer 1 recovery handles a crashed process with no external intervention.
 Note: systemctl stop does NOT trigger restart (deliberate stop is not a
 failure) — only crashes and non-zero exits do.
+
+## Tue Sep 29, ~2:20pm ET — Resilience test 2: full teardown (Layer 3)
+
+Simulated a full wipe: disabled and deleted the systemd unit, removed the
+repo and venv entirely. App confirmed DOWN (HTTP 000). Took no further
+action. The linux.wpi.edu cron watchdog detected the outage on its next
+2-minute cycle, SSHed into the VM using cs553_vm, and ran bootstrap.sh,
+which reinstalled the service and restarted the app. Wiped 18:17:47 UTC,
+RECOVERED 18:20:07 UTC — about 2.5 minutes, fully unattended. (pip wheel
+cache made this faster than the ~4-min cold first deploy.)
+
+Observed the idempotency guarantee directly: an overlapping cron cycle ran
+bootstrap.sh a second time on the already-recovered machine; it made no
+changes ("Already up to date", all requirements satisfied) and exited
+cleanly. Confirms recovery is safe to trigger repeatedly.
