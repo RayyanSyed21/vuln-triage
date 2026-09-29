@@ -18,7 +18,7 @@ set -euo pipefail
 REPO_URL="https://github.com/RayyanSyed21/vuln-triage.git"
 APP_DIR="$HOME/vuln-triage"
 VENV="$APP_DIR/.venv"
-GRADIO_PORT=8014
+GRADIO_PORT=7860
 PUBKEY="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOuZhtA0YWScGxZvgt39PIc23N0PLBmHjxygfvJtEvfW rayyan-cs553"
 
 log() { echo ">>> [$(date +%H:%M:%S)] $*"; }
