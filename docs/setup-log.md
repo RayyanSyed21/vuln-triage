@@ -81,3 +81,10 @@ unstable. A long-running install would have died with the connection.
 Resolution: run long operations inside tmux so they survive disconnects.
 This is the same problem the deployment itself has, and the reason the
 application runs under systemd rather than from an interactive shell.
+
+## Tue Sep 29, ~1:20pm ET — Port forwarding gotcha
+
+App bound to 8014 inside the VM returned HTTP 200 on localhost but
+ERR_EMPTY_RESPONSE from outside. The host forwards external port 8014 to
+the container's internal 7860. Fix: the app listens on 7860 inside the VM;
+the outside world reaches it at 8014. Corrected GRADIO_PORT in bootstrap.sh.
