@@ -37,7 +37,7 @@ chmod 600 "$HOME/.ssh/authorized_keys"
 log "Installing system packages"
 export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
-sudo -E apt-get update -y
+sudo -E apt-get -o DPkg::Lock::Timeout=300 update -y
 sudo -E apt-get install -y python3-venv python3-pip git tmux
 
 # --- 3. code --------------------------------------------------------------
