@@ -38,7 +38,7 @@ log "Installing system packages"
 export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
 sudo -E apt-get -o DPkg::Lock::Timeout=300 update -y
-sudo -E apt-get install -y python3-venv python3-pip git tmux
+sudo -E apt-get -o DPkg::Lock::Timeout=300 install -y python3-venv python3-pip git tmux
 
 # --- 3. code --------------------------------------------------------------
 log "Fetching latest code"
