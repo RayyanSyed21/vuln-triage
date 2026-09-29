@@ -88,3 +88,11 @@ App bound to 8014 inside the VM returned HTTP 200 on localhost but
 ERR_EMPTY_RESPONSE from outside. The host forwards external port 8014 to
 the container's internal 7860. Fix: the app listens on 7860 inside the VM;
 the outside world reaches it at 8014. Corrected GRADIO_PORT in bootstrap.sh.
+
+## Tue Sep 29, ~1:40pm ET — Resilience test 1: process crash (Layer 1)
+
+Killed the app's main process with kill -9. systemd (Restart=always)
+restarted it within 8 seconds; curl returned HTTP 200 afterward. Confirms
+Layer 1 recovery handles a crashed process with no external intervention.
+Note: systemctl stop does NOT trigger restart (deliberate stop is not a
+failure) — only crashes and non-zero exits do.
