@@ -77,6 +77,7 @@ User=$USER
 WorkingDirectory=$APP_DIR
 Environment=GRADIO_SERVER_NAME=0.0.0.0
 Environment=GRADIO_SERVER_PORT=$GRADIO_PORT
+EnvironmentFile=-/etc/vuln-triage.env
 ExecStart=$VENV/bin/python $APP_DIR/app.py
 Restart=always
 RestartSec=5
@@ -84,6 +85,13 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 UNIT
+
+# Optional: write HF token for the remote backend, if one was passed in.
+if [ -n "${HF_TOKEN:-}" ]; then
+    echo "HF_TOKEN=$HF_TOKEN" | sudo tee /etc/vuln-triage.env >/dev/null
+    sudo chmod 600 /etc/vuln-triage.env
+    log "wrote HF token env file"
+fi
 
 sudo systemctl daemon-reload
 sudo systemctl enable vuln-triage.service
