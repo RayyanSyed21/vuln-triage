@@ -10,23 +10,23 @@
 ## 1. Get onto the VM (on your Mac)
 
 ```bash
-ssh -i ~/.ssh/cs3_key -p <PORT> student-admin@<HOST>
+ssh -i ~/.ssh/cs3_key -p 2222 group14@melnibone.wpi.edu
 ```
+
+melnibone resolves to a private campus address (10.128.x.x), so the WPI VPN must be on when off campus.
 
 ## 2. Clone and start everything (on the VM)
 
 ```bash
-docker compose version          # confirm the compose plugin exists
 git clone https://github.com/<you>/vuln-triage.git && cd vuln-triage
 git switch cs3/docker-monitoring
 ```
 
-Put the secrets in a `.env` file next to `docker-compose.yml`. Compose reads it automatically and it is gitignored:
+Put the secrets in a `.env` file in the repo folder. `deploy.sh` reads it, and it is gitignored:
 
 ```bash
 printf 'HF_TOKEN=hf_...\nGRAFANA_PASSWORD=pick-something\n' > .env && chmod 600 .env
-docker compose up -d --build    # the first build takes a while (torch + model)
-docker compose ps
+./deploy.sh    # builds the image (slow the first time) and starts all 4 containers
 ```
 
 ## 3. Check each piece (on the VM)
@@ -40,7 +40,7 @@ curl -s localhost:1406/api/v1/targets | grep -o '"health":"[a-z]*"'   # expect 4
 ## 4. Container IPs for the sheet
 
 ```bash
-docker inspect -f '{{.Name}} {{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(docker compose ps -q)
+docker inspect -f '{{.Name}} {{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(docker ps -q --filter name=group14-)
 ```
 
 ## 5. Public URLs (ngrok)
@@ -74,5 +74,5 @@ Open each public URL and run 10 to 20 alerts from `samples.md`, plus a few empty
 ## 7. Tear down
 
 ```bash
-docker compose down
+docker rm -f group14-api group14-local group14-prometheus group14-grafana
 ```
