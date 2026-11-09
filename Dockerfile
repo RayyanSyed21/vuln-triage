@@ -8,6 +8,13 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
+# Deliverable 2a: node exporter as the apt package, inside each product
+# container, serving machine metrics on 9100 (same as the professor's template).
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        prometheus-node-exporter && \
+    rm -rf /var/lib/apt/lists/*
+
 # CPU-only torch first, so the pip line below sees torch==2.14.0 already
 # satisfied and does not pull the multi-GB CUDA build (the VM has no GPU).
 RUN pip install torch==2.14.0 --index-url https://download.pytorch.org/whl/cpu
@@ -23,7 +30,9 @@ RUN python -c "from huggingface_hub import snapshot_download; snapshot_download(
 
 COPY app.py .
 
-# 7860 = Gradio UI, 8000 = Prometheus /metrics
-EXPOSE 7860 8000
+# 7860 = Gradio UI, 8000 = app /metrics, 9100 = node exporter /metrics
+EXPOSE 7860 8000 9100
 
-CMD ["python", "app.py"]
+# Two processes: node exporter in the background, the app in the foreground.
+# exec makes python PID 1, so `docker stop` signals it directly.
+CMD ["bash", "-c", "prometheus-node-exporter --web.listen-address=:9100 & exec python app.py"]

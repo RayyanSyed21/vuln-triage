@@ -120,7 +120,7 @@
     },
     {
       "id": 6,
-      "title": "VM CPU busy %",
+      "title": "Container CPU busy % (node exporter)",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -135,14 +135,14 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])))",
+          "expr": "100 * (1 - avg by (product) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])))",
           "legendFormat": "__auto"
         }
       ]
     },
     {
       "id": 7,
-      "title": "VM memory used %",
+      "title": "Memory used % (node exporter)",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -157,7 +157,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)",
+          "expr": "avg by (product) (100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))",
           "legendFormat": "__auto"
         }
       ]

@@ -13,4 +13,7 @@ scrape_configs:
 
   - job_name: node
     static_configs:
-      - targets: ["node-exporter:9100"]
+      - targets: ["api-product:9100"]
+        labels: {product: api}
+      - targets: ["local-product:9100"]
+        labels: {product: local}

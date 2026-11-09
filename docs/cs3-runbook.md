@@ -2,11 +2,10 @@
 
 | Host port | What | Inside container |
 |---|---|---|
-| 1400 / 1401 | API product UI / metrics | 7860 / 8000 |
-| 1402 / 1403 | Local product UI / metrics | 7860 / 8000 |
-| 1404 | node-exporter | 9100 |
-| 1405 | Prometheus | 9090 |
-| 1406 | Grafana | 3000 |
+| 1400 / 1401 / 1402 | API product: UI / app metrics / node exporter | 7860 / 8000 / 9100 |
+| 1403 / 1404 / 1405 | Local product: UI / app metrics / node exporter | 7860 / 8000 / 9100 |
+| 1406 | Prometheus | 9090 |
+| 1407 | Grafana | 3000 |
 
 ## 1. Get onto the VM (on your Mac)
 
@@ -33,9 +32,9 @@ docker compose ps
 ## 3. Check each piece (on the VM)
 
 ```bash
-curl -s localhost:1401/metrics | grep ^triage_
-curl -s localhost:1404/metrics | head
-curl -s localhost:1405/api/v1/targets | grep -o '"health":"[a-z]*"'   # expect 3x up
+curl -s localhost:1401/metrics | grep ^triage_          # api app metrics
+curl -s localhost:1402/metrics | grep ^node_cpu | head -3 # api node exporter
+curl -s localhost:1406/api/v1/targets | grep -o '"health":"[a-z]*"'   # expect 4x up
 ```
 
 ## 4. Container IPs for the sheet
@@ -56,9 +55,9 @@ endpoints:
   - name: api-product
     upstream: {url: 1400}
   - name: local-product
-    upstream: {url: 1402}
+    upstream: {url: 1403}
   - name: grafana
-    upstream: {url: 1406}
+    upstream: {url: 1407}
 ```
 
 ```bash
