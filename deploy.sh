@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# CS3 Group 14: build the image and (re)start all four containers on the shared VM.
+# CS3 Group 14: build the image and (re)start all five containers on the shared VM.
 # Uses plain `docker` because the VM has no `docker compose` plugin.
 # Host ports, all in our claimed block 1400-1409:
 #   1400 api UI     1401 api app metrics     1402 api node exporter
@@ -42,6 +42,7 @@ docker run -d --name group14-grafana --network "$NET" --network-alias grafana --
   -e GF_SERVER_ROOT_URL='%(protocol)s://%(domain)s/grafana/' -e GF_SERVER_SERVE_FROM_SUB_PATH=true \
   -e GF_SECURITY_ADMIN_PASSWORD="$GRAFANA_PASSWORD" \
   -v "$PWD/Grafana/provisioning:/etc/grafana/provisioning:ro" \
+  -v group14-grafana-data:/var/lib/grafana \
   -p 1407:3000 grafana/grafana:11.3.0
 
 # Started last, because nginx looks up the other containers' names when it boots.
