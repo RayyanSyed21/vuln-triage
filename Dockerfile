@@ -35,4 +35,5 @@ EXPOSE 7860 8000 9100
 
 # Two processes: node exporter in the background, the app in the foreground.
 # exec makes python PID 1, so `docker stop` signals it directly.
-CMD ["bash", "-c", "prometheus-node-exporter --web.listen-address=:9100 & exec python app.py"]
+# --no-collector.systemd: containers have no systemd, so that collector only logs errors.
+CMD ["bash", "-c", "prometheus-node-exporter --web.listen-address=:9100 --no-collector.systemd & exec python app.py"]
