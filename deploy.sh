@@ -34,7 +34,7 @@ docker run -d --name group14-local --network "$NET" --network-alias local-produc
   --restart unless-stopped -e PRODUCT_MODE=local -e GRADIO_ROOT_PATH=/local \
   -p 1403:7860 -p 1404:8000 -p 1405:9100 "$IMG"
 
-docker run -d --name group14-prometheus --network "$NET" --restart unless-stopped \
+docker run -d --name group14-prometheus --network "$NET" --network-alias prometheus --restart unless-stopped \
   -v "$PWD/Prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro" \
   -p 1406:9090 prom/prometheus:v2.55.1
 
