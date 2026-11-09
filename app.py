@@ -1,4 +1,5 @@
 import os
+import threading
 import time
 import gradio as gr
 from dotenv import load_dotenv
@@ -61,13 +62,15 @@ def call_remote(alert, temp):
 
 
 _local_pipe = None
+_local_lock = threading.Lock()  # so a request and the warm-up never load the model twice
 
 
 def get_local_pipeline():
     global _local_pipe
-    if _local_pipe is None:
-        from transformers import pipeline
-        _local_pipe = pipeline("text-generation", model=LOCAL_MODEL)
+    with _local_lock:
+        if _local_pipe is None:
+            from transformers import pipeline
+            _local_pipe = pipeline("text-generation", model=LOCAL_MODEL)
     return _local_pipe
 
 
@@ -134,6 +137,10 @@ with gr.Blocks(title="Vuln Triage") as demo:
 
 if __name__ == "__main__":
     start_http_server(METRICS_PORT)  # Prometheus scrapes http://<container>:8000/metrics
+    if PRODUCT_MODE == "local":
+        # Load the model now, in the background, so the first user is not the one
+        # who waits minutes for it on the shared VM's slow disk.
+        threading.Thread(target=get_local_pipeline, daemon=True).start()
     demo.launch(
         server_name="0.0.0.0",
         server_port=int(os.environ.get("GRADIO_SERVER_PORT", 7860)),

@@ -38,11 +38,14 @@ docker run -d --name group14-prometheus --network "$NET" --restart unless-stoppe
   -v "$PWD/Prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro" \
   -p 1406:9090 prom/prometheus:v2.55.1
 
+# Grafana's SQLite DB lives in RAM (tmpfs): on the shared VM's overloaded disk it hit
+# "database is locked" and crash-looped. Nothing in it needs to persist, because the
+# datasource and dashboard are re-created from Grafana/provisioning on every start.
 docker run -d --name group14-grafana --network "$NET" --network-alias grafana --restart unless-stopped \
   -e GF_SERVER_ROOT_URL='%(protocol)s://%(domain)s/grafana/' -e GF_SERVER_SERVE_FROM_SUB_PATH=true \
   -e GF_SECURITY_ADMIN_PASSWORD="$GRAFANA_PASSWORD" \
   -v "$PWD/Grafana/provisioning:/etc/grafana/provisioning:ro" \
-  -v group14-grafana-data:/var/lib/grafana \
+  --tmpfs /var/lib/grafana:mode=1777,size=512m \
   -p 1407:3000 grafana/grafana:11.3.0
 
 # Started last, because nginx looks up the other containers' names when it boots.
