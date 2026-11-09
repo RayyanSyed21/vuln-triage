@@ -3,12 +3,33 @@ import time
 import gradio as gr
 from dotenv import load_dotenv
 from huggingface_hub import InferenceClient
+from prometheus_client import Counter, Gauge, Histogram, start_http_server
 
 load_dotenv()
 
 BACKENDS = ["Remote API", "Local model"]
 REMOTE_MODEL = "google/gemma-3-4b-it"
 LOCAL_MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
+
+# CS3: the same image runs as two products. PRODUCT_MODE picks the default backend.
+PRODUCT_MODE = os.environ.get("PRODUCT_MODE", "remote").lower()
+DEFAULT_BACKEND = "Local model" if PRODUCT_MODE == "local" else "Remote API"
+METRICS_PORT = int(os.environ.get("METRICS_PORT", 8000))
+
+# CS3: custom Prometheus metrics, served on METRICS_PORT at /metrics.
+REQUESTS = Counter(
+    "triage_requests_total", "Triage requests handled", ["backend", "status"]
+)
+LATENCY = Histogram(
+    "triage_latency_seconds", "Time to produce a triage answer", ["backend"],
+    buckets=(0.5, 1, 2, 5, 10, 20, 30, 60, 120),
+)
+IN_PROGRESS = Gauge("triage_in_progress", "Triage requests currently running")
+ERRORS = Counter(
+    "triage_errors_total", "Triage requests that raised an exception",
+    ["backend", "error_type"],
+)
+EMPTY_INPUTS = Counter("triage_empty_inputs_total", "Requests with an empty alert")
 
 client = InferenceClient(
     provider="auto",
@@ -65,18 +86,27 @@ def call_local(alert, temp):
 
 def triage(alert, backend, temp):
     if not alert.strip():
+        EMPTY_INPUTS.inc()
         return "Paste an alert first."
 
     start = time.time()
+    status = "ok"
+    IN_PROGRESS.inc()
     try:
         if backend == "Remote API":
             body = call_remote(alert, temp)
         else:
             body = call_local(alert, temp)
     except Exception as e:
+        status = "error"
+        ERRORS.labels(backend=backend, error_type=type(e).__name__).inc()
         body = f"{type(e).__name__}: {e}"
+    finally:
+        IN_PROGRESS.dec()
 
     elapsed = time.time() - start
+    REQUESTS.labels(backend=backend, status=status).inc()
+    LATENCY.labels(backend=backend).observe(elapsed)
     return f"{body}\n\n---\nBackend: {backend}\nLatency: {elapsed:.2f}s"
 
 
@@ -87,7 +117,7 @@ with gr.Blocks(title="Vuln Triage") as demo:
         with gr.Column(scale=1):
             backend = gr.Radio(
                 choices=BACKENDS,
-                value=BACKENDS[0],
+                value=DEFAULT_BACKEND,
                 label="Model backend",
             )
             temp = gr.Slider(0, 1, value=0.7, step=0.05, label="Temperature")
@@ -103,6 +133,7 @@ with gr.Blocks(title="Vuln Triage") as demo:
     go.click(fn=triage, inputs=[alert, backend, temp], outputs=out)
 
 if __name__ == "__main__":
+    start_http_server(METRICS_PORT)  # Prometheus scrapes http://<container>:8000/metrics
     demo.launch(
         server_name="0.0.0.0",
         server_port=int(os.environ.get("GRADIO_SERVER_PORT", 7860)),

@@ -1,0 +1,9 @@
+# Keep secrets, the local venv, and big unrelated files out of the build context.
+.env
+.venv/
+.git/
+.gradio/
+__pycache__/
+*.pyc
+*.pdf
+docs/

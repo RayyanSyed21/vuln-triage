@@ -1,0 +1,6 @@
+apiVersion: 1
+providers:
+  - name: group14
+    type: file
+    options:
+      path: /etc/grafana/provisioning/dashboards
