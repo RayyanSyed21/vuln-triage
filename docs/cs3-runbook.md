@@ -43,29 +43,19 @@ curl -s localhost:1406/api/v1/targets | grep -o '"health":"[a-z]*"'   # expect 4
 docker inspect -f '{{.Name}} {{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(docker ps -q --filter name=group14-)
 ```
 
-## 5. Public URLs (ngrok)
+## 5. Public URL (ngrok, one tunnel)
 
-Sign up at ngrok.com and copy your authtoken. Keep it out of the repo. Create `~/ngrok.yml` on the VM:
-
-```yaml
-version: 3
-agent:
-  authtoken: <YOUR_NGROK_TOKEN>
-endpoints:
-  - name: api-product
-    upstream: {url: 1400}
-  - name: local-product
-    upstream: {url: 1403}
-  - name: grafana
-    upstream: {url: 1407}
-```
+Free ngrok gives one domain, so the tunnel points at nginx (1408), which routes
+`/api/`, `/local/` and `/grafana/` to the right container.
 
 ```bash
-tmux new -s ngrok 'ngrok start --all --config ~/ngrok.yml'
+mkdir -p ~/bin && curl -sSL https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz | tar -xz -C ~/bin
+read -rsp "ngrok token: " T && ~/bin/ngrok config add-authtoken "$T" && unset T
+tmux new -d -s ngrok "~/bin/ngrok http 1408 --log stdout --log-format logfmt > ~/ngrok.log 2>&1"
+grep -o "url=https://[^ ]*" ~/ngrok.log | tail -1
 ```
 
-If the free plan rejects three endpoints at once, use Cloudflare quick tunnels instead. They need no account and count as "ngrok or similar":
-`cloudflared tunnel --url http://localhost:1400`, run once per port.
+Current URL: https://unguided-chump-bottom.ngrok-free.dev (`/api/`, `/local/`, `/grafana/`)
 
 ## 6. Generate traffic for the report
 
@@ -74,5 +64,6 @@ Open each public URL and run 10 to 20 alerts from `samples.md`, plus a few empty
 ## 7. Tear down
 
 ```bash
-docker rm -f group14-api group14-local group14-prometheus group14-grafana
+tmux kill-session -t ngrok
+docker rm -f group14-api group14-local group14-prometheus group14-grafana group14-nginx
 ```
