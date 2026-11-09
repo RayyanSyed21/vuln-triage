@@ -1,0 +1,28 @@
+# Prometheus export, Group 14 vuln-triage, 17:50 to 19:05 UTC (13:50 to 15:05 US Eastern, as in the Grafana screenshots), 2-minute steps
+# products: api = Remote API backend (Gemma 3 4B via Hugging Face), local = Qwen2.5-0.5B on CPU.
+# Node exporter runs inside both containers but reads the host /proc, so vm_* describes the whole shared VM.
+requests_per_min{product,status} [product=api,status=ok]: 18:36=0 18:38=0.668 18:40=1.05 18:42=0.842 18:44=0 18:46=0 18:48=0 18:50=0.867 18:52=2.12 18:54=2.11 18:56=0.842 18:58=0 19:00=0 19:02=0 19:04=0
+requests_per_min{product,status} [product=local,status=error]: 18:40=0 18:42=0.211 18:44=0.421 18:46=0.421 18:48=0 18:50=0 18:52=0 18:54=0 18:56=0 18:58=0 19:00=0 19:02=0 19:04=0
+requests_per_min{product,status} [product=local,status=ok]: 18:36=0 18:38=1.06 18:40=1.72 18:42=2.53 18:44=2.11 18:46=1.26 18:48=0.421 18:50=0 18:52=0 18:54=0 18:56=0 18:58=0 19:00=0 19:02=0 19:04=0
+p95_latency_s{product} [product=api]: 18:38=4.55 18:40=4.25 18:42=4.4 18:50=4.86 18:52=7.8 18:54=7.62 18:56=9
+p95_latency_s{product} [product=local]: 18:38=17.5 18:40=16 18:42=9.64 18:44=9.57 18:46=9.5 18:48=9.75
+avg_latency_s{product} [product=api]: 18:38=2.21 18:40=2.01 18:42=2.11 18:50=3.08 18:52=2.85 18:54=2.62 18:56=2.99
+avg_latency_s{product} [product=local]: 18:38=6.55 18:40=6.69 18:42=5.73 18:44=5.07 18:46=4.17 18:48=6.74
+in_progress{product} [product=api]: 18:34=0 18:36=0 18:38=0 18:40=1 18:42=1 18:44=1 18:46=1 18:48=1 18:50=0 18:52=0 18:54=0 18:56=0 18:58=0 19:00=0 19:02=0 19:04=0
+in_progress{product} [product=local]: 18:34=0 18:36=0 18:38=0 18:42=0 18:44=0 18:46=0 18:48=0 18:50=0 18:52=0 18:54=0 18:56=0 18:58=0 19:00=0 19:02=0 19:04=0
+errors_total{product,error_type} [error_type=ValueError,product=local]: 18:42=2 18:44=3 18:46=3 18:48=3 18:50=3 18:52=3 18:54=3 18:56=3 18:58=3 19:00=3 19:02=3 19:04=3
+empty_inputs_total{product} [product=api]: 18:34=0 18:36=0 18:38=0 18:40=1 18:42=1 18:44=1 18:46=1 18:48=1 18:50=2 18:52=3 18:54=3 18:56=3 18:58=3 19:00=3 19:02=3 19:04=3
+empty_inputs_total{product} [product=local]: 18:34=0 18:36=0 18:38=0 18:42=1 18:44=3 18:46=3 18:48=3 18:50=3 18:52=3 18:54=3 18:56=3 18:58=3 19:00=3 19:02=3 19:04=3
+app_memory_MB{product} [product=api]: 18:34=146 18:36=148 18:38=148 18:40=159 18:42=160 18:44=294 18:46=366 18:48=1.56e+03 18:50=1.56e+03 18:52=1.56e+03 18:54=1.56e+03 18:56=1.56e+03 18:58=1.56e+03 19:00=1.56e+03 19:02=1.56e+03 19:04=1.56e+03
+app_memory_MB{product} [product=local]: 18:34=565 18:36=1.56e+03 18:38=1.58e+03 18:42=1.58e+03 18:44=1.58e+03 18:46=1.58e+03 18:48=1.58e+03 18:50=1.58e+03 18:52=1.58e+03 18:54=1.58e+03 18:56=1.58e+03 18:58=1.58e+03 19:00=1.58e+03 19:02=1.58e+03 19:04=1.58e+03
+vm_cpu_busy_pct []: 18:34=84.1 18:36=56.4 18:38=37.7 18:40=49 18:42=62.2 18:44=64.2 18:46=59.9 18:48=54.6 18:50=42.4 18:52=33.9 18:54=27.3 18:56=24.9 18:58=27 19:00=29.9 19:02=39 19:04=40.1
+vm_mem_used_pct [product=api]: 18:34=68.6 18:36=69.3 18:38=68.7 18:40=69.2 18:42=69.4 18:44=69.5 18:46=69.1 18:48=69.7 18:50=69.7 18:52=69.7 18:54=69.5 18:56=69.4 18:58=69.3 19:00=69.4 19:02=70.7 19:04=66.2
+vm_load1 [product=api]: 18:34=11.3 18:36=9.9 18:38=14.2 18:40=16.5 18:42=22.1 18:44=20 18:46=19.3 18:48=13.5 18:50=7.63 18:52=7.37 18:54=5.55 18:56=5.28 18:58=6.11 19:00=8.42 19:02=14.2 19:04=7.51
+# final counters
+triage_requests_total [backend=Remote API,product=api,status=ok] = 16
+triage_requests_total [backend=Local model,product=local,status=ok] = 19
+triage_requests_total [backend=Remote API,product=local,status=error] = 3
+triage_requests_total [backend=Local model,product=api,status=ok] = 3
+triage_errors_total [backend=Remote API,error_type=ValueError,product=local] = 3
+triage_empty_inputs_total [product=local] = 3
+triage_empty_inputs_total [product=api] = 3
